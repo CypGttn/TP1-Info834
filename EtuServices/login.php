@@ -1,13 +1,19 @@
 <?php
 session_start();
+require 'config.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = $_POST['email'];
     $password = $_POST['password'];
 
-    // Vérification des identifiants (à remplacer par une vérification sécurisée)
-    if ($email === "admin@example.com" && $password === "password") {
-        $_SESSION['user'] = ['nom' => 'Admin', 'prenom' => 'User', 'email' => $email];
+    $pdo = connectToDatabase();
+
+    $stmt = $pdo->prepare('SELECT * FROM users WHERE email = ?');
+    $stmt->execute([$email]);
+    $user = $stmt->fetch();
+
+    if ($user && password_verify($password, $user['password'])) {
+        $_SESSION['user'] = ['nom' => $user['nom'], 'prenom' => $user['prenom'], 'email' => $user['email']];
         header("Location: services.php");
         exit();
     } else {
