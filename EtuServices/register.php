@@ -1,16 +1,18 @@
 <?php
+require 'config.php';
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $nom = $_POST['nom'];
     $prenom = $_POST['prenom'];
     $email = $_POST['email'];
-    $password = $_POST['password'];
+    $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
 
-    // Enregistrement de l'utilisateur (à remplacer par une logique de base de données)
-    // Pour l'instant, on affiche simplement les informations
-    echo "<p>Utilisateur enregistré :</p>";
-    echo "<p>Nom : $nom</p>";
-    echo "<p>Prénom : $prenom</p>";
-    echo "<p>Email : $email</p>";
+    $pdo = connectToDatabase();
+
+    $stmt = $pdo->prepare('INSERT INTO users (nom, prenom, email, password) VALUES (?, ?, ?, ?)');
+    $stmt->execute([$nom, $prenom, $email, $password]);
+
+    echo "<p>Utilisateur enregistré avec succès !</p>";
 }
 ?>
 
