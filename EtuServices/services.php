@@ -36,3 +36,5 @@ $user = $_SESSION['user'];
     </nav>
 </body>
 </html>
+
+</html>
