@@ -7,6 +7,8 @@ if (!isset($_SESSION['user'])) {
 }
 
 $user = $_SESSION['user'];
+$services = $_SESSION['services'] ?? []; // Utilisation de l'opérateur NULL coalescent pour éviter l'erreur
+
 ?>
 
 <!DOCTYPE html>
@@ -22,19 +24,22 @@ $user = $_SESSION['user'];
         <h1>Nos services</h1>
     </header>
     <div class="content">
-        <p>Bienvenue, <?= htmlspecialchars($user['prenom']) ?> <?= htmlspecialchars($user['nom']) ?> !</p>
-        <p>Voici une liste de nos services :</p>
-        <ul>
-            <li>Service 1 : Description du service 1.</li>
-            <li>Service 2 : Description du service 2.</li>
-            <li>Service 3 : Description du service 3.</li>
-        </ul>
+        <p>Bienvenue, <?= htmlspecialchars($user) ?> !</p>
+        <p>Voici une liste de vos services autorisés :</p>
+
+        <?php if (!empty($services)): ?>
+            <ul>
+                <?php foreach ($services as $service): ?>
+                    <li><?= htmlspecialchars($service) ?></li>
+                <?php endforeach; ?>
+            </ul>
+        <?php else: ?>
+            <p>Aucun service disponible pour le moment.</p>
+        <?php endif; ?>
     </div>
     <nav>
         <a href="accueil.php">Retour à l'accueil</a>
         <a href="logout.php">Se déconnecter</a>
     </nav>
 </body>
-</html>
-
 </html>
