@@ -1,23 +1,22 @@
 <?php
 session_start();
-require 'config.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $email = $_POST['email'];
-    $password = $_POST['password'];
+    $email = escapeshellarg($_POST['email']);
+    $password = escapeshellarg($_POST['password']);
+    
+    $pythonPath = "\"C:\\Users\\Guitton Cyprien\\AppData\\Local\\Programs\\Python\\Python311\\python.exe\"";
+    $scriptPath = "C:\\xampp\\htdocs\\EtuServices\\server_redis.py";
 
-    $pdo = connectToDatabase();
-
-    $stmt = $pdo->prepare('SELECT * FROM users WHERE email = ?');
-    $stmt->execute([$email]);
-    $user = $stmt->fetch();
-
-    if ($user && password_verify($password, $user['password'])) {
-        $_SESSION['user'] = ['nom' => $user['nom'], 'prenom' => $user['prenom'], 'email' => $user['email']];
+    $cmd = "$pythonPath $scriptPath $email $password 2>&1";
+    $output = shell_exec($cmd);
+    
+    if (strpos($output, "Connexion réussie") !== false) {
+        $_SESSION['user'] = $_POST['email'];
         header("Location: services.php");
         exit();
     } else {
-        $error = "Email ou mot de passe incorrect.";
+        $error = nl2br(htmlspecialchars($output)); // Affiche le message d'erreur de Redis
     }
 }
 ?>
