@@ -9,10 +9,33 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     $pdo = connectToDatabase();
 
-    $stmt = $pdo->prepare('INSERT INTO users (nom, prenom, email, password) VALUES (?, ?, ?, ?)');
-    $stmt->execute([$nom, $prenom, $email, $password]);
+    // Check if the email already exists
+    $stmt = $pdo->prepare('SELECT COUNT(*) FROM users WHERE email = ?');
+    $stmt->execute([$email]);
+    $count = $stmt->fetchColumn();
 
-    echo "<p>Utilisateur enregistré avec succès !</p>";
+    if ($count > 0) {
+        echo "<p>Un utilisateur avec cet email existe déjà.</p>";
+    } else {
+        // Insert the new user
+        $stmt = $pdo->prepare('INSERT INTO users (nom, prenom, email, password) VALUES (?, ?, ?, ?)');
+        $stmt->execute([$nom, $prenom, $email, $password]);
+
+        // Connect to Redis
+        $redis = new Redis();
+        $redis->connect('127.0.0.1', 6379);
+
+        // Store user data in Redis
+        $user_key = "user:$email";
+        $redis->hSet($user_key, [
+            'nom' => $nom,
+            'prenom' => $prenom,
+            'email' => $email,
+            'password' => $password
+        ]);
+
+        echo "<p>Utilisateur enregistré avec succès !</p>";
+    }
 }
 ?>
 
